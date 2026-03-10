@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload — Spring MVC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/static/css/upload.css}">
+</head>
+<body>
+
+<div class="page-wrapper">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">⬆</span>
+                <span class="logo-text">DropZone<em>.io</em></span>
+            </div>
+            <div class="header-meta">
+                <span class="badge">Spring MVC</span>
+                <span class="badge badge-green">v1.0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <div class="section-header">
+                <h1 class="section-title">Upload Files</h1>
+                <p class="section-subtitle">Drag &amp; drop or click to select. Up to 50MB per file.</p>
+            </div>
+
+            <!-- Drop Zone -->
+            <div class="dropzone" id="dropzone">
+                <div class="dropzone-inner">
+                    <div class="dropzone-icon" id="dropzoneIcon">
+                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="12" width="48" height="40" rx="4" stroke="currentColor" stroke-width="2"/>
+                            <path d="M32 28v12M26 34l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20 20h-4a4 4 0 00-4 4v20a4 4 0 004 4h32a4 4 0 004-4V24a4 4 0 00-4-4h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="dropzone-text">
+                        <p class="dropzone-primary">Drop files here</p>
+                        <p class="dropzone-secondary">or <button class="browse-btn" id="browseBtn">browse files</button></p>
+                    </div>
+                    <div class="dropzone-formats">
+                        <span>Images</span><span>PDF</span><span>Word</span><span>Excel</span><span>ZIP</span><span>+more</span>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.mp4,.mp3" hidden>
+                <div class="dropzone-overlay" id="dropOverlay">
+                    <div class="overlay-text">Release to upload</div>
+                </div>
+            </div>
+
+            <!-- Upload Queue -->
+            <div class="upload-queue" id="uploadQueue" style="display:none;">
+                <div class="queue-header">
+                    <span class="queue-title">Queue <span class="queue-count" id="queueCount">0</span></span>
+                    <div class="queue-actions">
+                        <button class="btn btn-ghost" id="clearQueueBtn">Clear</button>
+                        <button class="btn btn-primary" id="uploadAllBtn">Upload All</button>
+                    </div>
+                </div>
+                <div class="queue-list" id="queueList"></div>
+            </div>
+        </section>
+
+        <!-- Uploaded Files Section -->
+        <section class="files-section">
+            <div class="section-header">
+                <h2 class="section-title">Uploaded Files
+                    <span class="file-count-badge" id="fileCountBadge" th:text="${#lists.size(files)}">0</span>
+                </h2>
+                <button class="btn btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+            </div>
+
+            <div class="files-grid" id="filesGrid">
+                <!-- Server-rendered files (Thymeleaf) -->
+                <div th:if="${files.empty}" class="empty-state" id="emptyState">
+                    <div class="empty-icon">📂</div>
+                    <p>No files uploaded yet</p>
+                </div>
+
+                <div th:each="file : ${files}" class="file-card" th:data-id="${file.id}">
+                    <div class="file-card-icon" th:classappend="${file.fileCategory == 'IMAGE'} ? 'icon-image' : (${file.fileCategory == 'DOCUMENT'} ? 'icon-doc' : 'icon-other')">
+                        <span th:text="${file.fileCategory == 'IMAGE'} ? '🖼' : (${file.fileCategory == 'DOCUMENT'} ? '📄' : (${file.fileCategory == 'ARCHIVE'} ? '🗜' : (${file.fileCategory == 'VIDEO'} ? '🎬' : '📁')))">📁</span>
+                    </div>
+                    <div class="file-card-info">
+                        <p class="file-name" th:text="${file.originalName}">filename.pdf</p>
+                        <p class="file-meta">
+                            <span th:text="${file.formattedSize}">0 KB</span>
+                            <span class="dot">·</span>
+                            <span th:text="${file.formattedUploadDate}">Date</span>
+                        </p>
+                    </div>
+                    <div class="file-card-actions">
+                        <a th:href="@{/api/files/{id}/download(id=${file.id})}" class="action-btn" title="Download">⬇</a>
+                        <button class="action-btn action-delete" th:data-id="${file.id}" title="Delete" onclick="deleteFile(this.dataset.id)">✕</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+</div>
+
+<script th:src="@{/static/js/upload.js}"></script>
+</body>
+</html>
